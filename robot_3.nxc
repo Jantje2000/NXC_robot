@@ -1,0 +1,118 @@
+#include "NXCDefs.h"
+
+int rc1, rc2, rc3, rc4;                                                         //Variables for drawing lines
+
+task drive()
+{
+     SetSensorTouch(IN_1);                                                      //Here we are declaring the touchsensor
+     while(true)
+     {
+                OnFwdReg(OUT_BC, 50, OUT_REGMODE_SYNC);                         //If the sensor is touched, then:
+                if(SENSOR_1==1);
+                {
+                                    OnRev(OUT_BC, 50);                          //goes backwards
+                                    Wait(1000) ;                                //for a second
+                                    OnFwd(OUT_C, 80);                           //and twist
+                                    OnRev(OUT_B, 30);
+                                    Wait(750);                                  // 3/4 second
+                }
+     }
+}
+task ultrasonic()                                                               //The task for the ultra sonic sensor
+{
+     SetSensorLowspeed(IN_2);                                                   //Here the code is declaring the ultrasonic sensor
+     while(true)
+     {
+                if(SensorUS(IN_2)<15)                                           //If the ultrasonic sensor sees anything
+                {
+                                     PlayToneEx(494,100,500, FALSE);            //make music as a attention
+                                     Wait(100);
+                                     PlayToneEx(466,100,500, FALSE);
+                                     Wait(100);
+                                     PlayToneEx(440,100,500, FALSE);
+                                     Wait(100);
+                                     PlayToneEx(415,100,500, FALSE);
+                                     Wait(100);
+                                     PlayToneEx(392,100,500, FALSE);
+                                     Wait(100);
+                                     PlayToneEx(370,100,500, FALSE);
+                                     Wait(100);
+                }
+     }
+}
+
+task twist_sensor()                                                             //Twist the sensor first 180 degrees to one side and then 180 degrees back
+{
+     while(true)
+     {
+           RotateMotor(OUT_A, 50, 200);                                         //First twists to the other side
+           Wait(300);
+           RotateMotor(OUT_A, 50, -200);                                        //and then goes back
+           Wait(300);
+     }
+}
+task draw_line()                                                                //Also the robot has to draw a line on the NXT display
+{
+     while(true)
+     {
+                rc1=1;
+                while(SENSOR_1==0)
+                {
+                                  LineOut(50, 0, 50, rc1);                      //Draw a line vertical
+                                  rc1=rc1+2;
+                                  Wait(1000);
+                }
+                if(SENSOR_1==1)
+                {
+                                  rc1=rc1-2;
+                                  LineOut(50, 0, 50, rc1);                      //Draw a line vertical
+                                  Wait(750);
+                }
+                rc2=50;
+                while(SENSOR_1==0)
+                {
+                                  LineOut(50, rc1, rc2, rc1);                   //Draw a line horizontal
+                                  rc2=rc2-2;
+                                  Wait(1000);
+                }
+                if(SENSOR_1==1)
+                {
+                                  rc2=rc2-2;
+                                  LineOut(50, rc1, rc2, rc1);                   //Draw a line horizontal
+                                  Wait(750);
+                }
+                rc3=rc1;
+                while(SENSOR_1==0)
+                {
+                                  LineOut(rc2, rc1, rc2, rc3);                  //Draw a line horizontal
+                                  rc3=rc3-2;
+                                  Wait(1000);
+                }
+                if(SENSOR_1==1)
+                {
+                                  rc3=rc3+2;
+                                  LineOut(rc2, rc1, rc2, rc3);                  //Draw a line horizontal
+                                  Wait(750);
+                }
+                rc4=rc2;
+                while(SENSOR_1==0)
+                {
+                                  LineOut(rc2, rc3, rc4, rc3);                  //Draw a line horizontal
+                                  rc4=rc4+2;
+                                  Wait(1000);
+                }
+                if(SENSOR_1==1)
+                {
+                                  TextOut(20, LCD_LINE1, "Congratulated,");     //If the robot has drawed a line
+                                  TextOut(17, LCD_LINE2, "the exploration was");//Say: "Congratulated, the exploration was succesfully"
+                                  TextOut(15, LCD_LINE3, "succesfully");
+                                  Off(OUT_BC);                                  //And then stop the motor
+                }
+     }
+     
+}
+
+task main()
+{
+     Precedes(drive, ultrasonic, twist_sensor, draw_line);                      //Perform the tasks declared before.
+}
